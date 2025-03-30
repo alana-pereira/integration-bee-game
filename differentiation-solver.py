@@ -23,7 +23,8 @@ import sympy as sp
           2. Evaluate the list to LaTex
   '''
 # Convert tree to string in latex formatting
-def convertTreeToLaTex(tree,operators):
+def convertTreeToLaTex(tree):
+    operators = ['+', '-', '*', '^']
     listExpr = convertTreeToList(tree, operators)
     laTexExpr = convertListToLatex(listExpr, operators)
     return laTexExpr
@@ -93,4 +94,4 @@ def testingTreeToLaTex():
             Tree('^',
                 Tree('x'),
                 Tree(6))))
-    assert()
+    assert(convertTreeToLaTex(t) == '2+5x^x+7x^7')
