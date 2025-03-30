@@ -1,24 +1,32 @@
 # Differentiation solver
 
 '''Plan:
-    1. First we convert a string representing the term to differenciate into a tree
-    2. Then we use the tree to perform the differenciation
-    3. Then we convert the tree into a string (combining like-terms along the way
+    1. First we convert a string representing the term to differenciate into a tree (Step 1)
+    2. Then we use the tree to perform the differenciation (Step 2)
+    3. Then we convert the tree into a string (combining like-terms along the way (Step 3)
 '''
 
 # imports
 from cmu_cpcs_utils import testFunction, Tree
+import latexify
 import sympy as sp
 
-
+''' Step 1: Status incomplete'''
 # Convert from string to tree
+
+'''Step 2: Status incomplete'''
 # Differentiate using tree
 
-# Convert tree to string in latex formatting
+'''Step 3: Status almost complete'''
   ''' Idea:
           1. Convert tree to list
           2. Evaluate the list to LaTex
   '''
+# Convert tree to string in latex formatting
+def convertTreeToLaTex(tree,operators):
+    listExpr = convertTreeToList(tree, operators)
+    laTexExpr = convertListToLatex(listExpr, operators)
+    return laTexExpr
 
 # Converts a tree to a list
 def convertTreeToList(tree, operators):
@@ -41,8 +49,8 @@ def convertTreeToList(tree, operators):
 def convertListToLatex(exprList, operators):
     lengthOfExpr = getLengthOfExpr(exprList, i=0)
     exprString = convertListToString(exprList, 0)
-    simplifiedExpr = simplifyExpr(exprString)
-    laTexExpr = latexify(simplifiedExpr)
+    simplifiedExpr = sp.simplify(sp.sympify(exprString))
+    laTexExpr = latexify.latexify(simplifiedExpr)
     return laTexExpr
 
 def convertListToString(exprList, i):
@@ -67,37 +75,12 @@ def getLengthOfExpr(L, i=0):
     else:
         count = 1
     return count + getLengthOfExpr(L, i+1)
-            
-def simplifyExpr(expression):
-    ''' note:
-        use len(operator)!!!
-    '''
-    
-    # First distribute terms with brackets
-    
-    # add together all constant terms
-    
-    # simplify x+x
-    
-    # simplify x+kx
-    
-    # simplify x*x
-    
-    # simplify x*kx
-    
-    # simplify x*x^a
-    
-    # simplify x*x^x
-    
-    # Dictionary to collect like terms
-    
-    # Final expression!
 
 
-
+''' Test functions (need to write)'''
 # Trees to test on!
-def testTreeToLaTex():
-  t = t = Tree('+',
+def testingTreeToLaTex():
+  t = Tree('+',
         Tree(2),
         Tree('*',
             Tree(5),
@@ -110,3 +93,4 @@ def testTreeToLaTex():
             Tree('^',
                 Tree('x'),
                 Tree(6))))
+    assert()
