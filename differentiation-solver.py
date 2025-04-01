@@ -23,7 +23,7 @@ def convertToDerivativeTree(tree):
         return tree.value
     else:
         expressions 
-
+'''tree to list version'''
 def evalDerivativeTree(tree):
     if tree.isLeaf():
         return tree.value
@@ -40,7 +40,56 @@ def evalDerivativeTree(tree):
             return result
         elif tree.value == '^':
             return something
-            
+
+'''tree to tree version'''
+def calculateDerivativeTree(tree):
+    # operators = ['+', '-',  
+    # Operator cases
+    if tree.isLeaf():
+        pass # do some stuff
+
+    else:
+        # do some calculations
+        if tree.value == '+':
+            finalTree = Tree('+')
+            for child in tree.children:
+                derivativeChild = calculateDerivateTree(child)
+                finalTree += derivativeChild # Need to check if this function works
+            return finalTree
+    
+        if tree.value == '-':
+            finalTree = Tree('-')
+            for child in tree.children:
+                derivativeChild = calculateDerivateTree(child)
+                finalTree += derivativeChild # Need to check if this function works
+            return finalTree
+        
+        if tree.value == '*':
+            finalTree = None
+            for child in tree.children:
+                if finalTree == None:
+                    finalTree = child
+                else:
+                    finalTree = performProductRule(finalTree, child)
+            return finalTree
+    
+        if tree.value == '/':
+            numerator = None
+            denominator = None
+            for child in tree.children:
+                if numerator == None:
+                    numerator = child
+                else:
+                    denominator = child
+            finalTree = performQuotientRule(numerator, denominator)
+            return finalTree
+
+
+def performProductRule(tree):
+    pass
+
+def performQuotientRule(numerator, denominator):
+    pass
 '''Step 3: Status almost complete'''
   ''' Idea:
           1. Convert tree to list
