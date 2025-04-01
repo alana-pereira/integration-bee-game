@@ -18,10 +18,10 @@ import sympy as sp
 # Differentiate using tree
 
 '''Step 3: Status almost complete'''
-  ''' Idea:
-          1. Convert tree to list
-          2. Evaluate the list to LaTex
-  '''
+''' Idea:
+    1. Convert tree to list
+    2. Evaluate the list to LaTex
+'''
 # Convert tree to string in latex formatting
 def convertTreeToLaTex(tree):
     operators = ['+', '-', '*', '^']
@@ -81,7 +81,7 @@ def getLengthOfExpr(L, i=0):
 ''' Test functions (need to write)'''
 # Trees to test on!
 def testingTreeToLaTex():
-  t = Tree('+',
+    t = Tree('+',
         Tree(2),
         Tree('*',
             Tree(5),
