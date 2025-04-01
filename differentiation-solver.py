@@ -13,21 +13,17 @@ import sympy as sp
 
 ''' Step 1: Status incomplete'''
 # Convert from string to tree
+def convertDerivativeExpressionToTree(expression):
 
 '''Step 2: Status incomplete'''
 # Differentiate using tree
-
-#1
-def convertDerivativeExpressionToTree(expression):
     
-#2
 def convertToDerivativeTree(tree):
     if tree.isLeaf():
         return tree.value
     else:
         expressions 
 
-#3
 def evalDerivativeTree(tree):
     if tree.isLeaf():
         return tree.value
