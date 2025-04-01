@@ -7,7 +7,7 @@
 '''
 
 # imports
-from cmu_cpcs_utils import testFunction, Tree
+import tree
 import latexify
 import sympy as sp
 
