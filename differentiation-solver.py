@@ -17,6 +17,34 @@ import sympy as sp
 '''Step 2: Status incomplete'''
 # Differentiate using tree
 
+#1
+def convertDerivativeExpressionToTree(expression):
+    
+#2
+def convertToDerivativeTree(tree):
+    if tree.isLeaf():
+        return tree.value
+    else:
+        expressions 
+
+#3
+def evalDerivativeTree(tree):
+    if tree.isLeaf():
+        return tree.value
+    else:
+        expressions = []
+        for child in tree.children:
+            expressions.append(evalDerivativeTree(child))
+        if tree.value == '+':
+            return sum(expressions)
+        elif tree.value == '*':
+            result = 1
+            for expression in expressions:
+                result *= expression
+            return result
+        elif tree.value == '^':
+            return something
+            
 '''Step 3: Status almost complete'''
   ''' Idea:
           1. Convert tree to list
