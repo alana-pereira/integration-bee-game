@@ -7,13 +7,16 @@
 '''
 
 # imports
-import tree
-import latexify
+from tree import Tree
+import latexify # may not need to import
 import sympy as sp
+import math # may not need
+import numpy as np # may not need
 
 ''' Step 1: Status incomplete'''
 # Convert from string to tree
 def convertDerivativeExpressionToTree(expression):
+    pass
 
 '''Step 2: Status incomplete'''
 # Differentiate using tree
@@ -22,24 +25,27 @@ def convertToDerivativeTree(tree):
     if tree.isLeaf():
         return tree.value
     else:
-        expressions 
-'''tree to list version'''
-def evalDerivativeTree(tree):
-    if tree.isLeaf():
-        return tree.value
-    else:
-        expressions = []
-        for child in tree.children:
-            expressions.append(evalDerivativeTree(child))
-        if tree.value == '+':
-            return sum(expressions)
-        elif tree.value == '*':
-            result = 1
-            for expression in expressions:
-                result *= expression
-            return result
-        elif tree.value == '^':
-            return something
+        pass
+        # expressions 
+
+
+'''tree to list version -- Kosbie said no'''
+# def evalDerivativeTree(tree):
+#     if tree.isLeaf():
+#         return tree.value
+#     else:
+#         expressions = []
+#         for child in tree.children:
+#             expressions.append(evalDerivativeTree(child))
+#         if tree.value == '+':
+#             return sum(expressions)
+#         elif tree.value == '*':
+#             result = 1
+#             for expression in expressions:
+#                 result *= expression
+#             return result
+#         elif tree.value == '^':
+#             return something
 
 '''tree to tree version'''
 def calculateDerivativeTree(tree):
@@ -53,15 +59,15 @@ def calculateDerivativeTree(tree):
         if tree.value == '+':
             finalTree = Tree('+')
             for child in tree.children:
-                derivativeChild = calculateDerivateTree(child)
-                finalTree += derivativeChild # Need to check if this function works
+                derivativeChild = calculateDerivativeTree(child)
+                finalTree.addChild(derivativeChild)
             return finalTree
     
         if tree.value == '-':
             finalTree = Tree('-')
             for child in tree.children:
-                derivativeChild = calculateDerivateTree(child)
-                finalTree += derivativeChild # Need to check if this function works
+                derivativeChild = calculateDerivativeTree(child)
+                finalTree.addChild(derivativeChild)
             return finalTree
         
         if tree.value == '*':
@@ -124,7 +130,7 @@ def convertListToLatex(exprList, operators):
     lengthOfExpr = getLengthOfExpr(exprList, i=0)
     exprString = convertListToString(exprList, 0)
     simplifiedExpr = sp.simplify(sp.sympify(exprString))
-    laTexExpr = latexify.latexify(simplifiedExpr)
+    laTexExpr = latexifyExpr(simplifiedExpr)
     return laTexExpr
 
 def convertListToString(exprList, i):
@@ -151,6 +157,10 @@ def getLengthOfExpr(L, i=0):
     return count + getLengthOfExpr(L, i+1)
 
 
+@latexify.expression
+def latexifyExpr(expr):
+    return expr
+
 ''' Test functions (need to write)'''
 # Trees to test on!
 def testingTreeToLaTex():
@@ -168,3 +178,13 @@ def testingTreeToLaTex():
                 Tree('x'),
                 Tree(6))))
     assert(convertTreeToLaTex(t) == '2+5x^x+7x^7')
+
+'''testing derivative calculator'''
+def testingDerivativeCalc():
+    tree1 = Tree('+',
+                 Tree(5),
+                 Tree('x'))
+    derivativeTree = calculateDerivativeTree(tree1)
+    print(convertTreeToLaTex(derivativeTree))
+
+testingDerivativeCalc()
