@@ -50,9 +50,15 @@ def convertToDerivativeTree(tree):
 '''tree to tree version'''
 def calculateDerivativeTree(tree):
     # operators = ['+', '-', '*', '/', '^']
+    derivativeVariable = 'x' # hardcoded for now
     # Operator cases
     if tree.isLeaf():
-        return tree
+        if tree.value == derivativeVariable:
+            return Tree(1)
+        elif isinstance(tree.value,int) or isinstance(tree.value,float):
+            return Tree(0)
+        else:
+            return f'unidentifiable object received: {tree}'
 
     else:
         # do some calculations
@@ -92,18 +98,23 @@ def calculateDerivativeTree(tree):
 
         if tree.value == '^':
             # power rule!
-            # need to implement a right --> left traversal!!!
+            finalTree = Tree()
+            power = None
+            base = None
 
-            # case 1: x^a
-
-            # case 2: a^x
-
-            # case 3: a^a
-
-            # case 4: x^x
-
-            print('working on this')
-            return tree
+            for child in tree.children:
+                if power == None:
+                    power = child
+                elif base == None:
+                    base = child
+                else:
+                    power = finalTree
+                    base = None
+                
+                if (power != None) and (base != None):
+                    finalTree = performPowerRule(base, power)
+            
+            return finalTree
 
 
 def performProductRule(finalTree, child):
@@ -131,6 +142,40 @@ def performQuotientRule(numerator, denominator):
     return Tree('/', numeratorDerivative, vSquared)
 
 def performPowerRule(base, power):
+    print(f''' entered power rule
+                base = {base}
+                power = {power}''')
+    if isinstance(base.value,int) or isinstance(base.value, float):
+        if isinstance(power.value, int) or isinstance(power.value, float):
+            return Tree(0)
+        else:
+            result = Tree('*')
+            coeff = f'ln({power.value})'
+            variableTree = Tree('*',
+                                Tree(base), Tree(power))
+            result.addChild(Tree(coeff), variableTree)
+            return result
+    else:
+        if isinstance(power.value,int) or isinstance(power.value, float):
+            newPower = power.value - 1
+            coeff = power
+            result = Tree('*',
+                          Tree(coeff),
+                          Tree('^',
+                                Tree(base),
+                                Tree(newPower)))
+            return result
+        else:
+            return 'need to work on this case -- need to pass in deirvative variable'
+            # need to work on this case
+
+    # case 1: x^a
+
+    # case 2: a^x
+
+    # case 3: a^a
+
+    # case 4: x^x
     return 'ahhhh'
 
 '''Step 3: Status almost complete'''
@@ -220,8 +265,11 @@ def testingTreeToLaTex():
 def testingDerivativeCalc():
     tree1 = Tree('+',
                  Tree(5),
-                 Tree('x'))
+                 Tree('^',
+                      Tree('x'),
+                      Tree(2)))
     derivativeTree = calculateDerivativeTree(tree1)
-    print(convertTreeToLaTex(derivativeTree))
+    print(f'initial tree is {convertTreeToLaTex(tree1)}')
+    print(f'derivative tree is {convertTreeToLaTex(derivativeTree)}')
 
 testingDerivativeCalc()
