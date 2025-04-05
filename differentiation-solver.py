@@ -49,10 +49,10 @@ def convertToDerivativeTree(tree):
 
 '''tree to tree version'''
 def calculateDerivativeTree(tree):
-    # operators = ['+', '-',  
+    # operators = ['+', '-', '*', '/', '^']
     # Operator cases
     if tree.isLeaf():
-        pass # do some stuff
+        return tree
 
     else:
         # do some calculations
@@ -90,12 +90,49 @@ def calculateDerivativeTree(tree):
             finalTree = performQuotientRule(numerator, denominator)
             return finalTree
 
+        if tree.value == '^':
+            # power rule!
+            # need to implement a right --> left traversal!!!
 
-def performProductRule(tree):
-    pass
+            # case 1: x^a
+
+            # case 2: a^x
+
+            # case 3: a^a
+
+            # case 4: x^x
+
+            print('working on this')
+            return tree
+
+
+def performProductRule(finalTree, child):
+    u = finalTree
+    v = child
+    uPrime = calculateDerivativeTree(u)
+    vPrime = calculateDerivativeTree(v)
+    result = Tree('+',
+                  Tree('*',
+                       u, vPrime),
+                    Tree('*',
+                         v, uPrime))
+    return result
 
 def performQuotientRule(numerator, denominator):
-    pass
+    u = numerator
+    v = denominator
+    uPrime = calculateDerivativeTree(u)
+    vPrime = calculateDerivativeTree(v)
+    numeratorDerivative = Tree('-',
+                                Tree('*', v, uPrime),
+                                Tree('*', u, vPrime))
+    vSquared = Tree('^',
+                    v, Tree(2))
+    return Tree('/', numeratorDerivative, vSquared)
+
+def performPowerRule(base, power):
+    return 'ahhhh'
+
 '''Step 3: Status almost complete'''
 ''' Idea:
     1. Convert tree to list
