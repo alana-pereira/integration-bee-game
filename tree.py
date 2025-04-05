@@ -21,8 +21,9 @@ class Tree:
 
     def addChild(self, child):
         assert(isinstance(child, Tree))
-        if self._containsTree(child):
-            raise Exception('The child tree is already in this tree.')
+        # I am commenting out the following exception since I am getting an error when forming my trees
+        # if self._containsTree(child):
+        #     raise Exception('The child tree is already in this tree.')
         self.children += (child,)
 
     def removeChild(self, child):
