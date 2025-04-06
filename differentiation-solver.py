@@ -303,7 +303,7 @@ def convertListToLatex(exprList, operators):
         raise
 
 # Converts a tree to a list
-def convertTreeToList(tree, operators):
+def convertTreeToList(tree, operators): # need to fix this!!!!
     # print('working on the tree:', tree) # may uncomment later
     # result = []
     if not isinstance(tree,Tree):
@@ -313,7 +313,7 @@ def convertTreeToList(tree, operators):
         return [tree.value] # added brackets
     else:
         operator = tree.value
-        # print('curr operator:', operator)
+        print('curr operator:', operator) # main op
         finalExpr = []
         currBracket = []
         for child in tree.children:
@@ -321,24 +321,27 @@ def convertTreeToList(tree, operators):
             if not isinstance(child, Tree):
                 raise ValueError(f"Invalid child node: {child}")
             # print('curr child is', child)
-            if child.value in operators:
-                if operator.isalpha():
-                    innerTerm = convertTreeToList(child, operators)
-                    currBracket += [[operator, innerTerm], '*'] # need to check if this works
-                # print('step 1')
-                else:
-                    currBracket += [convertTreeToList(child,operators), operator]
+            # if child.value in operators:
+                # need to simplify expr
+            if not operator.isalpha():
+                childExpr = convertTreeToList(child,operators)
+                finalExpr.append(childExpr)
+                finalExpr.append(operator)
             else:
-                # print('step 2')
-                # if operator.isalpha():
-                #     innerTerm = convertTreeToList(child, operators)
-                #     currBracket += [[operator, innerTerm, ], '*'] # need to check if this works
-                # else:
-                currBracket += [str(child.value), operator]
-        finalExpr.extend(currBracket[:-1])
+                # so operator is like sin or cos or ln
+                innerTerm = convertTreeToList(child, operators)
+                print('inner term:', innerTerm)
+                currBracket += [[operator, innerTerm], '*'] # need to check if this works
+                print('to add', [[operator, innerTerm], '*'])
+                print('after adding', currBracket)
+        
+            # finalExpr.extend(currBracket[:-1])
+        print('final expr',finalExpr[:-1])
+        return finalExpr[:-1]
+        # print('added term = ', finalExpr)
 
-        # print('tree-->list:', finalExpr)
-        return finalExpr
+    # print('tree-->list:', finalExpr)
+    return finalExpr
 
 # Converts a list to LaTeX formatting (work in progress)
 def convertListToLatex(exprList, operators):
@@ -425,7 +428,12 @@ def testingDerivativeCalc():
                             Tree('^',
                                 Tree('x',
                                 Tree('x')))))
-    treesList = [tree4]
+    
+    tree5 = Tree('*',
+                 Tree('x'),
+                 Tree('sin',
+                    Tree('x')))
+    treesList = [tree5]
 
     for testTree in treesList:
         operators = ['+', '-', '*', '^', 'ln', '/', 'sin', 'cos', 'tan', 'sec']
