@@ -1,8 +1,8 @@
 # Differentiation solver
 
 '''Plan:
-    1. First we convert a string representing the term to differenciate into a tree (Step 1) 
-    2. Then we use the tree to perform the differenciation (Step 2) -- DONE
+    1. First we convert a string representing the term to differenciate into a tree (Step 1)
+    2. Then we use the tree to perform the differenciation (Step 2) -- almost done
     3. Then we convert the tree into a string (combining like-terms along the way (Step 3) -- DONE
 '''
 
@@ -30,11 +30,11 @@ def calculateDerivativeTree(tree):
         elif isinstance(tree.value,int) or isinstance(tree.value,float):
             return Tree(0)
         else:
-            # probably a constant variable term
+            # it's a constant variable term
             return Tree(0)
 
     else:
-        # do some calculations
+        # do some calculations depending on the operator
         if tree.value == '+':
             finalTree = Tree('+')
             for child in tree.children:
@@ -71,7 +71,7 @@ def calculateDerivativeTree(tree):
 
         if tree.value == '^':
             # power rule!
-            finalTree = Tree(0) # 0 is a placeholder -- dunno how to generate empty tree
+            finalTree = Tree(0) # 0 is a placeholder
             power = None
             base = None
 
@@ -101,12 +101,19 @@ def calculateDerivativeTree(tree):
             return finalTree
         
         if tree.value == 'sin':
-            for child in tree.children:
-                functChild = child
-            finalTree = Tree('*')
-            coeff = innerDerivative = calculateDerivativeTree(functChild)
-            innerPartOfFunction = tree
+            # d/dx(sin(f(x))) = f'(x)*cos(f(x))
 
+            for child in tree.children:
+                functChild = child # functChild = f(x)
+            finalTree = Tree('*')
+
+            # f'(x) part
+            coeff = calculateDerivativeTree(functChild)
+
+            # f(x)
+            innerPartOfFunction = functChild
+
+            # cos(f(x)) part
             cosPartOfTree = Tree('cos')
             cosPartOfTree.addChild(innerPartOfFunction)
             
@@ -116,12 +123,17 @@ def calculateDerivativeTree(tree):
             return finalTree
         
         if tree.value == 'cos':
+            # d/dx(cos(f(x))) = -f'(x)*sin(f(x))
+
             for child in tree.children:
                 functChild = child
+            
+            # f'(x)
             finalTree = Tree('*')
-            unfactoredCoeff = innerDerivative = calculateDerivativeTree(functChild)
+            unfactoredCoeff = calculateDerivativeTree(functChild)
+
             # but since d/dx(cos) --> -sin, we have to include -1 factor
-            innerPartOfFunction = tree
+            innerPartOfFunction = functChild
             coeff = Tree('*')
             coeff.addChild(Tree(-1))
             coeff.addChild(unfactoredCoeff)
@@ -139,7 +151,7 @@ def calculateDerivativeTree(tree):
                 functChild = child
             finalTree = Tree('*')
             coeff = innerDerivative = calculateDerivativeTree(functChild)
-            innerPartOfFunction = tree
+            innerPartOfFunction = functChild
 
             secPartOfTree = Tree('sec')
             secPartOfTree.addChild(innerPartOfFunction)
@@ -151,12 +163,11 @@ def calculateDerivativeTree(tree):
 
             return finalTree
 
-        # below code is from AI
+        # below line of code is from AI
         raise ValueError(f"Unsupported operator: {tree.value}")
 
 
 def performProductRule(finalTree, child):
-    # print(f''' entered product rule''')
     u = finalTree
     v = child
     uPrime = calculateDerivativeTree(u)
@@ -166,12 +177,9 @@ def performProductRule(finalTree, child):
                        u, vPrime),
                     Tree('*',
                          v, uPrime))
-    
-    # print(f'result from product rule is {convertListToLatex(convertTreeToList(result, operators),operators)}')
     return result
 
 def performQuotientRule(numerator, denominator):
-    # print(f''' entered quotient rule''')
     u = numerator
     v = denominator
     uPrime = calculateDerivativeTree(u)
@@ -185,65 +193,48 @@ def performQuotientRule(numerator, denominator):
 
 def performPowerRule(base, power):
     operators = ['+', '-', '*', '^', 'ln', '/', 'sin', 'cos', 'tan', 'sec']
-    # print(f''' entered power rule
-    #             base tree = {base}
-    #             power tree = {power}''')
     if isinstance(base.value,int) or isinstance(base.value, float):
-        # print('base is a number')
         if isinstance(power.value, int) or isinstance(power.value, float):
-            # print('power is a number')
             return Tree(0)
         else:
-            # print('power is NOT a number')
+            # case: k^f(x)
             result = Tree('*')
-            coeff = f'ln({power.value})'
+            coeff = Tree('ln')
+            coeff.addChild(f'{base.value}')
             variableTree = Tree('*',
                                 base, power)
+            chainRuleTerm = calculateDerivativeTree(power)
             result.addChild(coeff)
             result.addChild(variableTree)
+            result.addChild(chainRuleTerm)
             return result
     else:
-        # print('base is NOT a number')
         if isinstance(power.value,int) or isinstance(power.value, float):
-            # print('power is a number')
+            # case: f(x)^k
             newPower = power.value - 1
 
             coeff = power
             variableTerm = Tree('^',
                                 base,
                                 Tree(newPower))
+            chainRuleTerm = calculateDerivativeTree(base)
             result = Tree('*',
                           coeff,
+                          chainRuleTerm,
                           variableTerm)
-            
-            # print(f'result from power rule is {convertListToLatex(convertTreeToList(result, operators),operators)}')
 
             return result
         else:
-            # print('power is NOT a number')
             derivativeVariable = 'x' # hardcoded derivative variable for now
             if derivativeVariable in str(power.value):
-                # print(f'{derivativeVariable} is in power!')
-                # d/dx(x^g(x)) = f*g*(1/x) + f*g'*ln(x)
+                # case: f(x)^g(x)
+                # d/dx(f(x)^g(x)) = f*g*(1/x)(f') + f*g'*ln(x)(f')
                 f = Tree('^',
                          base,
                          power)
-                # print(f'f is {convertListToLatex(convertTreeToList(f, operators),operators)}')
                 g = power
-                # print(f'g is {convertListToLatex(convertTreeToList(g,operators),operators)}')
                 gPrime = calculateDerivativeTree(g)
-                # print(f"g' is {convertListToLatex(convertTreeToList(gPrime,operators),operators)}")
-
-                # result = Tree('+',
-                #               Tree('*',
-                #                    f,
-                #                    g,
-                #                    '/',
-                #                    Tree(derivativeVariable)),
-                #                 Tree('*',
-                #                      f,
-                #                      gPrime,
-                #                      Tree(f'ln{derivativeVariable}'))) # need to make ln an operator!
+                chainRuleTerm = calculateDerivativeTree(base)
 
                 subFirstPart = Tree('/')
                 subFirstPart.addChild(Tree(1))
@@ -253,6 +244,7 @@ def performPowerRule(base, power):
                 firstPart.addChild(f)
                 firstPart.addChild(g)
                 firstPart.addChild(subFirstPart)
+                firstPart.addChild(chainRuleTerm)
 
                 subSecondPart = Tree('ln')
                 subSecondPart.addChild(Tree(f'{derivativeVariable}'))
@@ -261,15 +253,11 @@ def performPowerRule(base, power):
                 secondPart.addChild(f)
                 secondPart.addChild(gPrime)
                 secondPart.addChild(subSecondPart)
+                firstPart.addChild(chainRuleTerm)
 
                 result = Tree('+')
                 result.addChild(firstPart)
                 result.addChild(secondPart)
-                
-                # print(f'''
-                #       result after power rule as list {convertTreeToList(result, operators)}
-                #       result after power rule as expr {convertListToString(convertTreeToList(result, operators),0)}
-                #     result after power rule in latex format {convertListToLatex(convertListToString(convertTreeToList(result, operators),0), operators)}''')
                 return result
 
             else:
@@ -284,45 +272,33 @@ def performPowerRule(base, power):
                               newPower)
                 return result
 
+def performTrigLogPowerRule(base, power):
+    firstPartOfExpr = performPowerRule(base,power)
+    secondPartOfExpr = performPowerRule(base,1)
+    finalTree = Tree('*')
+    finalTree.addChild(firstPartOfExpr)
+    finalTree.addChild(secondPartOfExpr)
+    return finalTree
+
 '''Step 3: Status complete'''
 ''' Idea:
     1. Convert tree to list
     2. Evaluate the list to LaTex
 '''
-# Convert tree to string in latex formatting
-# Try-exception part was given by AI
-def convertListToLatex(exprList, operators):
-    try:
-        lengthOfExpr = getLengthOfExpr(exprList, i=0)
-        exprString = convertListToString(exprList, 0)
-        simplifiedExpr = sp.simplify(sp.sympify(exprString))
-        laTexExpr = latexifyExpr(simplifiedExpr)
-        return laTexExpr
-    except Exception as e:
-        print(f"Error in convertListToLatex: {repr(e)}")
-        raise
-
 # Converts a tree to a list
-def convertTreeToList(tree, operators): # need to fix this!!!!
-    # print('working on the tree:', tree) # may uncomment later
-    # result = []
+def convertTreeToList(tree, operators):
     if not isinstance(tree,Tree):
         print(f"value '{tree}' is Nonetype")
     if tree.isLeaf() and tree.value not in operators:
-        # print('expression list comprises of following value:', tree.value)
-        return [tree.value] # added brackets
+        return [tree.value]
     else:
         operator = tree.value
-        print('curr operator:', operator) # main op
         finalExpr = []
         currBracket = []
         for child in tree.children:
             # The following two lines are from AI
             if not isinstance(child, Tree):
                 raise ValueError(f"Invalid child node: {child}")
-            # print('curr child is', child)
-            # if child.value in operators:
-                # need to simplify expr
             if not operator.isalpha():
                 childExpr = convertTreeToList(child,operators)
                 finalExpr.append(childExpr)
@@ -330,31 +306,13 @@ def convertTreeToList(tree, operators): # need to fix this!!!!
             else:
                 # so operator is like sin or cos or ln
                 innerTerm = convertTreeToList(child, operators)
-                print('inner term:', innerTerm)
-                currBracket += [[operator, innerTerm], '*'] # need to check if this works
-                print('to add', [[operator, innerTerm], '*'])
-                print('after adding', currBracket)
-        
-            # finalExpr.extend(currBracket[:-1])
-        print('final expr',finalExpr[:-1])
+                currBracket += [[operator, innerTerm], '*']
+                finalExpr += currBracket
         return finalExpr[:-1]
-        # print('added term = ', finalExpr)
-
-    # print('tree-->list:', finalExpr)
-    return finalExpr
-
-# Converts a list to LaTeX formatting (work in progress)
-def convertListToLatex(exprList, operators):
-    lengthOfExpr = getLengthOfExpr(exprList, i=0)
-    exprString = convertListToString(exprList, 0)
-    simplifiedExpr = sp.simplify(sp.sympify(exprString))
-    laTexExpr = latexifyExpr(simplifiedExpr)
-    return laTexExpr
 
 def convertTreeToLatex(tree):
     operators = ['+', '-', '*', '^', 'ln', '/', 'sin', 'cos', 'tan', 'sec']
     exprList = convertTreeToList(tree, operators)
-    lengthOfExpr = getLengthOfExpr(exprList, i=0)
     exprString = convertListToString(exprList, 0)
     simplifiedExpr = sp.simplify(sp.sympify(exprString))
     laTexExpr = latexifyExpr(simplifiedExpr)
@@ -372,18 +330,8 @@ def convertListToString(exprList, i):
         else:
             exprWithBrackets = str(term)
     return exprWithBrackets + convertListToString(exprList, i+1)
-            
-def getLengthOfExpr(L, i=0):
-    if i >= len(L):
-        return 0
-    term = L[i]
-    if isinstance(term, list):
-        count = getLengthOfExpr(term,i=0)
-    else:
-        count = 1
-    return count + getLengthOfExpr(L, i+1)
 
-
+# I'm not sure if formatting acc works due to vscode limitations
 @latexify.expression
 def latexifyExpr(expr):
     return expr
@@ -412,7 +360,7 @@ def testingDerivativeCalc():
                  Tree(5),
                  Tree('^',
                       Tree('x'),
-                      Tree(-3)))
+                      Tree(3)))
     tree2 = Tree('/',
                  Tree(5),
                  Tree('^',
@@ -421,31 +369,319 @@ def testingDerivativeCalc():
     
     tree3 = Tree('^',
                  Tree('x'),
-                 Tree('x'))
+                 Tree('a'))
     
     tree4 = Tree('sin',
                     Tree('cos',
                             Tree('^',
-                                Tree('x',
-                                Tree('x')))))
+                                Tree('x'),
+                                Tree('x'))))
     
     tree5 = Tree('*',
                  Tree('x'),
                  Tree('sin',
                     Tree('x')))
-    treesList = [tree5]
+    
+    tree6 = Tree('*',
+                 Tree('cos',
+                        Tree('x')),
+                 Tree('-',
+                        Tree('^',
+                            Tree('tan',
+                                 Tree('x')),
+                            Tree(2)),
+                        Tree(1)))
+    
+    tree7 = Tree('*',
+                 Tree(2),
+                 Tree('tan',
+                      Tree('x')))
+    
+    tree8 = Tree('^',
+                 Tree('tan',
+                      Tree('x')),
+                Tree(2))
+    
+    # trees 9 to 28 are generated by chatGPT
 
-    for testTree in treesList:
+    tree9 = Tree('sin',
+             Tree('+',
+                  Tree('^',
+                       Tree('x'),
+                       Tree('x')),
+                  Tree('cos',
+                       Tree('*',
+                            Tree('tan',
+                                 Tree('x')),
+                            Tree(3.14)))))
+
+    tree10 = Tree('^',
+                Tree('-',
+                    Tree('cos',
+                            Tree('^',
+                                Tree('x'),
+                                Tree(2))),
+                    Tree('tan',
+                            Tree('+',
+                                Tree('x'),
+                                Tree(1.5)))),
+                Tree('/',
+                    Tree('x'),
+                    Tree(0.5)))
+
+    tree11 = Tree('*',
+                Tree('sin',
+                    Tree('cos',
+                            Tree('tan',
+                                Tree('x')))),
+                Tree('^',
+                    Tree('+',
+                            Tree('x'),
+                            Tree(2.71)),
+                    Tree(2)))
+
+    tree12 = Tree('-',
+                Tree('^',
+                    Tree('x'),
+                    Tree('^',
+                            Tree('x'),
+                            Tree('x'))),
+                Tree('cos',
+                    Tree('^',
+                            Tree('x'),
+                            Tree('+',
+                                Tree(1),
+                                Tree('x')))))
+
+    tree13 = Tree('+',
+                Tree('sin',
+                    Tree('*',
+                            Tree('tan',
+                                Tree('x')),
+                            Tree('^',
+                                Tree('x'),
+                                Tree(3)))),
+                Tree('^',
+                    Tree('cos',
+                            Tree('x')),
+                    Tree(0.5)))
+
+    tree14 = Tree('/',
+                Tree('^',
+                    Tree('x'),
+                    Tree('+',
+                            Tree('x'),
+                            Tree('x'))),
+                Tree('-',
+                    Tree('sin',
+                            Tree('x')),
+                    Tree('cos',
+                            Tree('x'))))
+
+    tree15 = Tree('tan',
+                Tree('+',
+                    Tree('^',
+                            Tree('x'),
+                            Tree('^',
+                                Tree('x'),
+                                Tree(2))),
+                    Tree('sin',
+                            Tree('/',
+                                Tree('x'),
+                                Tree(0.01)))))
+
+    tree16 = Tree('*',
+                Tree('^',
+                    Tree('sin',
+                            Tree('x')),
+                    Tree('^',
+                            Tree('x'),
+                            Tree(2))),
+                Tree('-',
+                    Tree('cos',
+                            Tree('x')),
+                    Tree('tan',
+                            Tree('x'))))
+
+    tree17 = Tree('cos',
+                Tree('-',
+                    Tree('tan',
+                            Tree('^',
+                                Tree('+',
+                                    Tree('x'),
+                                    Tree(1.1)),
+                                Tree(2))),
+                    Tree('/',
+                            Tree(3.14),
+                            Tree('x'))))
+
+    tree18 = Tree('^',
+                Tree('cos',
+                    Tree('*',
+                            Tree('tan',
+                                Tree('^',
+                                    Tree('x'),
+                                    Tree(2))),
+                            Tree('x'))),
+                Tree('sin',
+                    Tree('x')))
+
+    tree19 = Tree('+',
+                Tree('^',
+                    Tree('x'),
+                    Tree('^',
+                            Tree('x'),
+                            Tree(2))),
+                Tree('*',
+                    Tree('tan',
+                            Tree('cos',
+                                Tree('x'))),
+                    Tree('sin',
+                            Tree('x'))))
+
+    tree20 = Tree('-',
+                Tree('^',
+                    Tree('^',
+                            Tree('x'),
+                            Tree('x')),
+                    Tree('x')),
+                Tree('^',
+                    Tree('tan',
+                            Tree('x')),
+                    Tree(0.33)))
+
+    tree21 = Tree('*',
+                Tree('^',
+                    Tree('+',
+                            Tree('sin',
+                                Tree('x')),
+                            Tree('cos',
+                                Tree('x'))),
+                    Tree('^',
+                            Tree('x'),
+                            Tree(2))),
+                Tree('tan',
+                    Tree('/',
+                            Tree('x'),
+                            Tree('^',
+                                Tree('x'),
+                                Tree(2)))))
+
+    tree22 = Tree('^',
+                Tree('sin',
+                    Tree('cos',
+                            Tree('^',
+                                Tree('x'),
+                                Tree('+',
+                                    Tree('x'),
+                                    Tree(1))))),
+                Tree('/',
+                    Tree(1.0),
+                    Tree('x')))
+
+    tree23 = Tree('-',
+                Tree('tan',
+                    Tree('+',
+                            Tree('cos',
+                                Tree('x')),
+                            Tree('^',
+                                Tree('x'),
+                                Tree(2)))),
+                Tree('sin',
+                    Tree('*',
+                            Tree('x'),
+                            Tree('x'))))
+
+    tree24 = Tree('cos',
+                Tree('+',
+                    Tree('^',
+                            Tree('x'),
+                            Tree('^',
+                                Tree('x'),
+                                Tree('x'))),
+                    Tree('*',
+                            Tree(0.5),
+                            Tree('tan',
+                                Tree('x')))))
+
+    tree25 = Tree('*',
+                Tree('^',
+                    Tree('x'),
+                    Tree('^',
+                            Tree('x'),
+                            Tree(2))),
+                Tree('^',
+                    Tree('sin',
+                            Tree('x')),
+                    Tree('cos',
+                            Tree('x'))))
+
+    tree26 = Tree('+',
+                Tree('^',
+                    Tree('tan',
+                            Tree('^',
+                                Tree('x'),
+                                Tree(2))),
+                    Tree('^',
+                            Tree('x'),
+                            Tree('x'))),
+                Tree('^',
+                    Tree('cos',
+                            Tree('/',
+                                Tree('x'),
+                                Tree(0.1))),
+                    Tree(3)))
+
+    tree27 = Tree('-',
+                Tree('^',
+                    Tree('^',
+                            Tree('x'),
+                            Tree('x')),
+                    Tree('^',
+                            Tree('x'),
+                            Tree(2))),
+                Tree('^',
+                    Tree('tan',
+                            Tree('+',
+                                Tree('x'),
+                                Tree(1))),
+                    Tree('sin',
+                            Tree('x'))))
+
+    tree28 = Tree('cos',
+                Tree('+',
+                    Tree('^',
+                            Tree('x'),
+                            Tree('x')),
+                    Tree('tan',
+                            Tree('cos',
+                                Tree('^',
+                                    Tree('x'),
+                                    Tree('x'))))))
+    
+    treesList = [tree9, tree10, tree11, tree12, tree13, tree14, tree15, tree16, tree17, tree18, tree19, tree20, tree21, tree22, tree23, tree24, tree25, tree26, tree27, tree28]
+
+    '''
+    Trees to check:
+    tree10 -- trig disappeared???
+    tree11 -- trig disappeared???
+    need to check tree12 onwards
+    '''
+
+    for index, testTree in enumerate(treesList):
         operators = ['+', '-', '*', '^', 'ln', '/', 'sin', 'cos', 'tan', 'sec']
         derivativeTree = calculateDerivativeTree(testTree)
-        print(f'initial tree is {convertListToString(convertTreeToList(testTree, operators), 0)}')
-        print(f'derivative tree is {convertTreeToLatex(derivativeTree)}')
-        print(f'''
-              ---------
-              for debugging purposes:
-              initial tree as list = {convertTreeToList(testTree, operators)}
-              final tree as list = {convertTreeToList(derivativeTree, operators)}
-              final tree as unsimplified expression = {convertListToString(convertTreeToList(derivativeTree, operators), 0)}
-              --------''')
+        print(f''' 
+              ----------------------------------------------------------------------------------------
+              currTree: {index + 9}
+              the derivative of {convertTreeToLatex(testTree)} is {convertTreeToLatex(derivativeTree)}
+              ----------------------------------------------------------------------------------------''')
+        # print(f'''
+        #       ---------
+        #       for debugging purposes:
+        #       initial tree as list = {convertTreeToList(testTree, operators)}
+        #       final tree as list = {convertTreeToList(derivativeTree, operators)}
+        #       final tree as unsimplified expression = {convertListToString(convertTreeToList(derivativeTree, operators), 0)}
+        #       --------''')
 
 testingDerivativeCalc()
